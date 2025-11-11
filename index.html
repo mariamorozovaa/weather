@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Погодное приложение</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>🌤️ Погодное приложение</h1>
+            <p class="subtitle">Получайте актуальную информацию о погоде</p>
+        </header>
+
+        <main class="main-content">
+            <section class="search-section">
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="cityInput" 
+                        class="search-input" 
+                        placeholder="Введите название города..."
+                        autocomplete="off"
+                    >
+                    <button id="searchBtn" class="search-btn">🔍</button>
+                </div>
+            </section>
+
+            <section class="weather-display">
+                <div id="loading" class="loading hidden">Загрузка...</div>
+                <div id="error" class="error hidden"></div>
+                
+                <div id="currentWeather" class="current-weather">
+                    <div class="location">
+                        <h2 id="cityName">Город</h2>
+                        <p id="date" class="date"></p>
+                        <p id="description" class="description"></p>
+                    </div>
+                    
+                    <div class="weather-main">
+                        <div class="temperature">
+                            <span id="temp">--</span>
+                            <span class="temp-unit">°C</span>
+                        </div>
+                        <div class="weather-icon">
+                            <img id="weatherIcon" src="" alt="Погода" class="icon">
+                        </div>
+                    </div>
+                    
+                    <div class="weather-details">
+                        <div class="detail">
+                            <span>Ощущается как:</span>
+                            <span id="feelsLike">--°</span>
+                        </div>
+                        <div class="detail">
+                            <span>Влажность:</span>
+                            <span id="humidity">--%</span>
+                        </div>
+                        <div class="detail">
+                            <span>Скорость ветра:</span>
+                            <span id="windSpeed">-- м/с</span>
+                        </div>
+                        <div class="detail">
+                            <span>Давление:</span>
+                            <span id="pressure">-- гПа</span>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="forecast-section">
+                    <h3 class="forecast-title">Прогноз на 5 дней</h3>
+                    <div id="forecast" class="forecast-container">
+                        <!-- Прогноз будет добавляться динамически -->
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>Данные о погоде предоставлены OpenWeatherMap API</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
