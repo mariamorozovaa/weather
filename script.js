@@ -31,7 +31,7 @@ function formatTemp(temp) {
 }
 
 function getWeatherIconURL(iconCode) {
-  return `https://api.openweathermap.org/img/wn/${iconCode}.png`;
+  return `https://openweathermap.org/img/wn/${iconCode}.png`;
 }
 
 function getCurrDate() {
@@ -59,10 +59,63 @@ function formatForecastDate(dateStr) {
 
 async function getWeaher(city) {
   try {
+    //показать индикатор загрузки
+    loading.classList.remove("hidden");
+    error.classList.add("hidden");
     //формируем URL для запросов
     const currWeatherURL = `${CURR_BASE_URL}?q=${city}&appid=${API_KEY}&lang=ru`;
     const forecastWeatherURL = `${FORECAST_URL}?q=${city}&appid=${API_KEY}&lang=ru`;
     //выполняем запросы параллельно
     const [currResponse, forecastResponse] = await Promise.all([fetch(currWeatherURL), fetch(forecastWeatherURL)]);
-  } catch {}
+    if (!currResponse.ok || !forecastResponse.ok) {
+      throw new Error(`${currResponse.status}, ${forecastResponse.status}`);
+    }
+
+    const currWeaherJSON = await currResponse.json();
+    const forecastWeaherJSON = await forecastResponse.json();
+
+    //логирование для теста
+    console.log(currWeaherJSON);
+    console.log(forecastWeaherJSON);
+    //скрыть индикатор загрузки
+    loading.classList.add("hidden");
+
+    return [currWeaherJSON, forecastWeaherJSON];
+  } catch (curError) {
+    loading.classList.add("hidden");
+    error.classList.remove("hidden");
+    error.textContent = curError.message;
+  }
 }
+
+async function displayCurrWeaher(currWeaherObj) {
+  cityName.textContent = currWeaherObj.name;
+  date.textContent = getCurrDate();
+  description.textContent = currWeaherObj.weather[0].description;
+  temp.textContent = formatTemp(currWeaherObj.main.temp);
+  weatherIcon.src = getWeatherIconURL(currWeaherObj.weather[0].icon);
+  feelsLike.textContent = `${formatTemp(currWeaherObj.main.feels_like)}°`;
+}
+
+async function forDisplayData() {
+  if (cityInput.value === "") {
+    const [defaultCurrWeather, defaultForecastWeaher] = await getWeaher("Moscow");
+    displayCurrWeaher(defaultCurrWeather);
+    return;
+  }
+
+  const [currWeaher, forecastWeaher] = await getWeaher(cityInput.value);
+  displayCurrWeaher(currWeaher);
+}
+
+searchBtn.addEventListener("click", () => {
+  forDisplayData();
+});
+
+cityInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    forDisplayData();
+  }
+});
+
+forDisplayData();
