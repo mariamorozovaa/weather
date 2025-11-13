@@ -111,8 +111,6 @@ async function getWeaher(city) {
     const currWeaherJSON = await currResponse.json();
     const forecastWeaherJSON = await forecastResponse.json();
 
-    console.log(forecastWeaherJSON);
-
     hideLoading();
 
     return [currWeaherJSON, forecastWeaherJSON];
