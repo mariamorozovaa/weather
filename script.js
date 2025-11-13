@@ -47,7 +47,7 @@ function getCurrDate() {
 }
 
 function formatForecastDate(dateStr) {
-  const date = new Date();
+  const date = new Date(dateStr);
   const options = {
     weekday: "short",
     month: "short",
@@ -57,11 +57,48 @@ function formatForecastDate(dateStr) {
   return date.toLocaleDateString("ru-RU", options);
 }
 
+//функции управления состоянием
+function showLoading() {
+  loading.classList.remove("hidden");
+}
+
+function hideLoading() {
+  loading.classList.add("hidden");
+}
+
+function showError() {
+  error.classList.remove("hidden");
+}
+
+function hideError() {
+  error.classList.add("hidden");
+}
+
+//прослушиватели событий
+searchBtn.addEventListener("click", () => {
+  if (cityInput.value.trim() === "") {
+    showError();
+    error.textContent = "Введите название города";
+    return;
+  }
+  forDisplayWeather();
+});
+
+cityInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    if (cityInput.value.trim() === "") {
+      showError();
+      error.textContent = "Введите название города";
+      return;
+    }
+    forDisplayWeather();
+  }
+});
+
 async function getWeaher(city) {
   try {
-    //показать индикатор загрузки
-    loading.classList.remove("hidden");
-    error.classList.add("hidden");
+    showLoading();
+    hideError();
     //формируем URL для запросов
     const currWeatherURL = `${CURR_BASE_URL}?q=${city}&appid=${API_KEY}&lang=ru`;
     const forecastWeatherURL = `${FORECAST_URL}?q=${city}&appid=${API_KEY}&lang=ru`;
@@ -74,48 +111,62 @@ async function getWeaher(city) {
     const currWeaherJSON = await currResponse.json();
     const forecastWeaherJSON = await forecastResponse.json();
 
-    //логирование для теста
-    console.log(currWeaherJSON);
     console.log(forecastWeaherJSON);
-    //скрыть индикатор загрузки
-    loading.classList.add("hidden");
+
+    hideLoading();
 
     return [currWeaherJSON, forecastWeaherJSON];
-  } catch (curError) {
-    loading.classList.add("hidden");
-    error.classList.remove("hidden");
-    error.textContent = curError.message;
+  } catch (currError) {
+    hideLoading();
+    showError();
+    error.textContent = "Введено некорректное название города";
+    console.log(currError.message);
   }
 }
-
-async function displayCurrWeaher(currWeaherObj) {
+//отображение текущей погоды
+function displayCurrWeaher(currWeaherObj) {
   cityName.textContent = currWeaherObj.name;
   date.textContent = getCurrDate();
   description.textContent = currWeaherObj.weather[0].description;
   temp.textContent = formatTemp(currWeaherObj.main.temp);
   weatherIcon.src = getWeatherIconURL(currWeaherObj.weather[0].icon);
   feelsLike.textContent = `${formatTemp(currWeaherObj.main.feels_like)}°`;
+  humidity.textContent = `${currWeaherObj.main.humidity}%`;
+  windSpeed.textContent = `${currWeaherObj.wind.speed} м/с`;
+  pressure.textContent = `${currWeaherObj.main.pressure} гПа`;
 }
 
-async function forDisplayData() {
+//отображение прогноза погоды на 5 дней
+function displayForecastWeaher(forecastWeaherObj) {
+  const dailyForecast = forecastWeaherObj.list.filter((item, index) => index % 8 === 0);
+  const forecastHTML = dailyForecast
+    .map((day) => {
+      return `
+        <div class="forecast-day">
+          <span class="forecast-date">${formatForecastDate(day.dt_txt)}</span>
+          <img src="${getWeatherIconURL(day.weather[0].icon)}" alt="Погода" class="forecast-icon">
+          <p class="forecast-desc">${day.weather[0].description}</p>
+          <span class="forecast-temp">${formatTemp(day.main.temp)}°C</span>
+        </div>
+      `;
+    })
+    .join("");
+  forecast.innerHTML = forecastHTML;
+}
+
+//вспомогательная функция для отображения погоды
+async function forDisplayWeather() {
   if (cityInput.value === "") {
     const [defaultCurrWeather, defaultForecastWeaher] = await getWeaher("Moscow");
     displayCurrWeaher(defaultCurrWeather);
+    displayForecastWeaher(defaultForecastWeaher);
     return;
   }
 
-  const [currWeaher, forecastWeaher] = await getWeaher(cityInput.value);
+  const [currWeaher, forecastWeaher] = await getWeaher(cityInput.value.trim());
   displayCurrWeaher(currWeaher);
+  displayForecastWeaher(forecastWeaher);
 }
 
-searchBtn.addEventListener("click", () => {
-  forDisplayData();
-});
-
-cityInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    forDisplayData();
-  }
-});
-
-forDisplayData();
+//вызов функции для отображения погоды
+forDisplayWeather();
