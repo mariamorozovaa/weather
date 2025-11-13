@@ -154,7 +154,7 @@ function displayForecastWeaher(forecastWeaherObj) {
 
 //вспомогательная функция для отображения погоды
 async function forDisplayWeather() {
-  if (cityInput.value === "") {
+  if (cityInput.value.trim() === "") {
     const [defaultCurrWeather, defaultForecastWeaher] = await getWeaher("Moscow");
     displayCurrWeaher(defaultCurrWeather);
     displayForecastWeaher(defaultForecastWeaher);
